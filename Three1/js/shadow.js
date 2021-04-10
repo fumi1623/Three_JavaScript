@@ -1,0 +1,69 @@
+// ページの読み込みを待つ
+window.addEventListener('load', init);
+// サイズを指定
+const width = 960;
+const height = 540;
+
+function init() {
+  // レンダラーを作成
+  const renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector('#myCanvas')
+  });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(width, height);
+
+  //shadow
+  renderer.shadowMap.enabled = true;
+
+  // シーンを作成
+  const scene = new THREE.Scene();
+
+  // カメラを作成
+  const camera = new THREE.PerspectiveCamera(45, width / height);
+  camera.position.set(20, 20, 20);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  // 床を作成
+  const meshFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(2000, 0.1, 2000),
+    new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.0 })
+  );
+  //床が影の影響を受ける
+  meshFloor.receiveShadow = true;
+  scene.add(meshFloor);
+
+  // オブジェクトを作成
+  const meshKnot = new THREE.Mesh(
+    new THREE.TorusKnotGeometry(3, 1, 100, 16),
+    new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.0 })
+  );
+  meshKnot.position.set(0, 5, 0);
+  //影を作る
+  meshKnot.castShadow = true;
+  scene.add(meshKnot);
+
+  const light = new THREE.SpotLight(0xffffff, 10, 100, Math.PI / 4, 1);
+  light.castShadow = true;
+  light.shadow.mapSize.width = 2048;
+  light.shadow.mapSize.height = 2048;
+  scene.add(light);
+
+
+  tick();
+
+  // 毎フレーム時に実行されるループイベントです
+  function tick() {
+    // レンダリング
+    renderer.render(scene, camera);
+
+    // 照明の位置を更新
+    const t = Date.now() / 500;
+    const r = 20.0;
+    const lx = r * Math.cos(t);
+    const lz = r * Math.sin(t);
+    const ly = 6.0 + 5.0 * Math.sin(t / 3.0);
+    light.position.set(lx, ly, lz);
+
+    requestAnimationFrame(tick);
+  }
+}
